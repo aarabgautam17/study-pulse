@@ -1,0 +1,6 @@
+{
+  "name": "StudyPulse — AI Socratic Tutor & Schedule Manager",
+  "description": "AI-powered academic study, revision, and schedule manager featuring a strict Socratic tutor, automated revision kits, custom study timers, weekly goal visualizer, and gamified progress tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
