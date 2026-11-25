@@ -48,12 +48,14 @@ export const SocraticTutorView: React.FC<SocraticTutorViewProps> = ({
   const [inputMessage, setInputMessage] = useState('');
   const [selectedSubject, setSelectedSubject] = useState(profile.subjects[0] || 'General');
   const [isChatLoading, setIsChatLoading] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
   // Materials Generator State
   const [notesInput, setNotesInput] = useState('');
   const [generatorSubject, setGeneratorSubject] = useState(profile.subjects[0] || 'General Studies');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [materialsError, setMaterialsError] = useState<string | null>(null);
   const [generatedQuizzes, setGeneratedQuizzes] = useState<QuizQuestion[]>([]);
   const [generatedNotes, setGeneratedNotes] = useState<SummaryNote[]>([]);
 
@@ -74,23 +76,19 @@ export const SocraticTutorView: React.FC<SocraticTutorViewProps> = ({
     const text = textToSend || inputMessage;
     if (!text.trim() || isChatLoading) return;
 
+    const historySnapshot = [...messages];
     const userMsg: ChatMessage = { role: 'user', content: text };
     setMessages((prev) => [...prev, userMsg]);
     setInputMessage('');
+    setChatError(null);
     setIsChatLoading(true);
 
     try {
-      const response = await sendSocraticMessage(text, messages, selectedSubject);
+      const response = await sendSocraticMessage(text, historySnapshot, selectedSubject);
       setMessages((prev) => [...prev, { role: 'assistant', content: response.reply }]);
       onAwardXP(15, 'Socratic inquiry');
     } catch (err: any) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: "I'm having a brief connection hitch. But let's keep working: What is the primary definition or relationship in this problem?",
-        },
-      ]);
+      setChatError(err?.message || 'Unable to reach the AI tutor. Please verify your Gemini API key in Settings > Secrets.');
     } finally {
       setIsChatLoading(false);
     }
@@ -99,6 +97,7 @@ export const SocraticTutorView: React.FC<SocraticTutorViewProps> = ({
   const handleGenerateMaterials = async () => {
     if (!notesInput.trim() || isGenerating) return;
 
+    setMaterialsError(null);
     setIsGenerating(true);
     try {
       const result = await generateStudyMaterials(notesInput, generatorSubject);
@@ -118,7 +117,7 @@ export const SocraticTutorView: React.FC<SocraticTutorViewProps> = ({
       onAwardXP(50, 'Generated comprehensive revision aids');
       setActiveSubTab('flashcards');
     } catch (err: any) {
-      alert('Could not generate materials automatically. Please check your notes and try again.');
+      setMaterialsError(err?.message || 'Could not generate materials. Please check your Gemini API key in Settings > Secrets and try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -278,6 +277,15 @@ export const SocraticTutorView: React.FC<SocraticTutorViewProps> = ({
                 </div>
               </div>
             )}
+            {chatError && (
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2">
+                <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold block">Tutor Error</span>
+                  <span>{chatError}</span>
+                </div>
+              </div>
+            )}
             <div ref={chatBottomRef} />
           </div>
 
@@ -398,6 +406,16 @@ export const SocraticTutorView: React.FC<SocraticTutorViewProps> = ({
               className="w-full text-sm p-4 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-slate-800"
             />
           </div>
+
+          {materialsError && (
+            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2">
+              <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold block">Generation Failed</span>
+                <span>{materialsError}</span>
+              </div>
+            </div>
+          )}
 
           <button
             onClick={handleGenerateMaterials}

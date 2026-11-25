@@ -128,7 +128,17 @@ st.markdown("""
 # ------------------------------------------------------------------------------
 # 1. Gemini AI Client Setup
 # ------------------------------------------------------------------------------
-GEMINI_KEY = os.environ.get("GEMINI_API_KEY") or st.secrets.get("GEMINI_API_KEY", None)
+def get_secret_key():
+    env_key = os.environ.get("GEMINI_API_KEY")
+    if env_key:
+        return env_key.strip()
+    try:
+        secret_key = st.secrets.get("GEMINI_API_KEY", None)
+        return secret_key.strip() if isinstance(secret_key, str) else secret_key
+    except Exception:
+        return None
+
+GEMINI_KEY = get_secret_key()
 
 try:
     from google import genai
@@ -137,22 +147,22 @@ try:
 except ImportError:
     has_genai = False
 
-def call_gemini(system_prompt: str, user_prompt: str, api_key: str):
+def call_gemini(system_prompt: str, user_prompt, api_key: str):
     """Calls Gemini 2.5 Flash with strict Socratic pedagogical rules."""
-    if not api_key:
+    cleaned_key = api_key.strip() if isinstance(api_key, str) else ""
+    if not cleaned_key:
         return "⚠️ Please enter your Gemini API Key in the left sidebar."
     
     if not has_genai:
         return "⚠️ `google-genai` library not found. Run: pip install google-genai"
 
     try:
-        client = genai.Client(api_key=api_key)
+        client = genai.Client(api_key=cleaned_key)
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=user_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_prompt,
-                temperature=0.7
             )
         )
         return response.text
@@ -335,10 +345,18 @@ Pedagogical Directives:
 """
         with st.chat_message("assistant"):
             with st.spinner("Formulating guiding questions..."):
-                response = call_gemini(SOCRATIC_PROMPT, user_query, api_key_input)
+                history_contents = [
+                    types.Content(
+                        role="user" if m["role"] == "user" else "model",
+                        parts=[types.Part.from_text(text=m["content"])]
+                    )
+                    for m in st.session_state.chat_history
+                ] if has_genai else user_query
+                response = call_gemini(SOCRATIC_PROMPT, history_contents, api_key_input)
                 st.markdown(response)
-                st.session_state.chat_history.append({"role": "assistant", "content": response})
-                st.session_state.xp += 10
+                if not response.startswith("⚠️") and not response.startswith("❌"):
+                    st.session_state.chat_history.append({"role": "assistant", "content": response})
+                    st.session_state.xp += 10
 
 # ------------------------------------------------------------------------------
 # 7. Revision Generator

@@ -24,7 +24,7 @@ export async function sendSocraticMessage(
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.error || 'Failed to communicate with Socratic Tutor');
+    throw new Error(errorData.details || errorData.error || 'Failed to communicate with Socratic Tutor');
   }
 
   return res.json();
@@ -42,7 +42,7 @@ export async function generateStudyMaterials(
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.error || 'Failed to generate study materials');
+    throw new Error(errorData.details || errorData.error || 'Failed to generate study materials');
   }
 
   return res.json();
