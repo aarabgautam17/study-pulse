@@ -14,6 +14,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { StudentProfile } from '../types';
+import studypulseLogo from '../assets/images/studypulse_logo_1795624899763.jpg';
 
 interface AuthScreenProps {
   accounts: StudentProfile[];
@@ -131,8 +132,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 px-4 font-sans selection:bg-indigo-100 selection:text-indigo-900">
       {/* Brand Header */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-3">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold text-xl shadow-md shadow-indigo-200">
-          SP
+        <div className="inline-flex items-center justify-center">
+          <img
+            src={studypulseLogo}
+            alt="StudyPulse Logo"
+            referrerPolicy="no-referrer"
+            className="w-16 h-16 rounded-2xl object-cover shadow-md shadow-indigo-100 border border-slate-200"
+          />
         </div>
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
           StudyPulse

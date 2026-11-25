@@ -1,6 +1,7 @@
 import React from 'react';
 import { ActiveTab, StudentProfile } from '../types';
 import { Play, Sparkles, Flame, Clock } from 'lucide-react';
+import studypulseLogo from '../assets/images/studypulse_logo_1795624899763.jpg';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -37,9 +38,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => setActiveTab('dashboard')}
             className="flex items-center gap-2.5 text-left group transition-transform active:scale-95 shrink-0"
           >
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-sm shadow-indigo-200 group-hover:bg-indigo-700 transition-colors">
-              SP
-            </div>
+            <img
+              src={studypulseLogo}
+              alt="StudyPulse Logo"
+              referrerPolicy="no-referrer"
+              className="w-9 h-9 rounded-xl object-cover shadow-sm shadow-indigo-100 border border-slate-200/80"
+            />
             <div>
               <span className="text-xl font-bold tracking-tight text-slate-900 group-hover:text-indigo-600 transition-colors">
                 StudyPulse
